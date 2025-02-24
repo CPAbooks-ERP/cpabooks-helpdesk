@@ -1,0 +1,50 @@
+name: Quarterly Task Creator
+
+on:
+  schedule:
+    # This will trigger the workflow at 12:00 AM on the 1st of April, July, October, and January
+    - cron: '0 0 1 1,4,7,10 *'
+  workflow_dispatch:
+    # Allows manual execution for all quarters at once
+    inputs:
+      create_all_tasks:
+        description: 'Create tasks for all quarters'
+        required: false
+        default: 'false'
+
+jobs:
+  create-tasks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Run task creation script
+        run: |
+          import datetime
+
+          quarterly_dates = ['2025-01-01', '2025-04-01', '2025-07-01', '2025-10-01']
+
+          def create_task(date):
+              # Replace with your actual task creation logic
+              print(f"Task created for {date}")
+
+          def create_all_tasks():
+              for date_str in quarterly_dates:
+                  date = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+                  create_task(date)
+
+          # If the workflow is triggered manually to create all tasks
+          if '${{ github.event.inputs.create_all_tasks }}' == 'true':
+              create_all_tasks()
+          else:
+              # If triggered by the cron schedule, run for that quarter
+              today = datetime.datetime.today().strftime('%Y-%m-%d')
+              if today in quarterly_dates:
+                  create_task(today)
